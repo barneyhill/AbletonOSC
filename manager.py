@@ -7,7 +7,7 @@ import traceback
 import logging
 import os
 
-logger = logging.getLogger("abletonosc")
+logger = logging.getLogger("abletonosc-ws")
 
 class Manager(ControlSurface):
     def __init__(self, c_instance):
@@ -17,10 +17,13 @@ class Manager(ControlSurface):
 
         self.handlers = []
 
+        self.start_logging()
+
+        self.ws_server = abletonosc.SimpleWebSocketServer('127.0.0.1', 3000, abletonosc.SimpleEcho)
+
         self.osc_server = abletonosc.OSCServer()
         self.schedule_message(0, self.tick)
 
-        self.start_logging()
         self.init_api()
 
         self.show_message("AbletonOSC: Listening for OSC on port %d" % abletonosc.OSC_LISTEN_PORT)
@@ -36,7 +39,7 @@ class Manager(ControlSurface):
         log_dir = os.path.join(module_path, "logs")
         if not os.path.exists(log_dir):
             os.mkdir(log_dir, 0o755)
-        log_path = os.path.join(log_dir, "abletonosc.log")
+        log_path = os.path.join(log_dir, "abletonosc-ws.log")
         self.log_file_handler = logging.FileHandler(log_path)
         self.log_file_handler.setLevel(self.log_level.upper())
         formatter = logging.Formatter('(%(asctime)s) [%(levelname)s] %(message)s')
@@ -102,8 +105,8 @@ class Manager(ControlSurface):
         and beachballs when a thread is started. Instead, this approach allows long-running
         processes such as the OSC server to perform operations.
         """
-        logger.debug("Tick...")
-        self.osc_server.process()
+        #self.osc_server.process()
+        self.ws_server.serveonce()
         self.schedule_message(1, self.tick)
 
     def reload_imports(self):
