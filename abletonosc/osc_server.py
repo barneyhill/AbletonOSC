@@ -38,7 +38,7 @@ class OSCServer:
         self._socket.bind(self._local_addr)
         self._callbacks = {}
 
-        self.logger = logging.getLogger("abletonosc")
+        self.logger = logging.getLogger("abletonosc-ws")
         self.logger.info("Starting OSC server (local %s, response port %d)",
                          str(self._local_addr), self._response_port)
 

@@ -1,5 +1,5 @@
 import logging
-logger = logging.getLogger("abletonosc")
+logger = logging.getLogger("abletonosc-ws")
 
 logger.info("Reloading abletonosc...")
 
@@ -12,3 +12,4 @@ from .track import TrackHandler
 from .device import DeviceHandler
 from .view import ViewHandler
 from .constants import OSC_LISTEN_PORT, OSC_RESPONSE_PORT
+from .ws_server import SimpleEcho, SimpleWebSocketServer

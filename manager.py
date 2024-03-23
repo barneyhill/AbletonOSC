@@ -105,7 +105,7 @@ class Manager(ControlSurface):
         and beachballs when a thread is started. Instead, this approach allows long-running
         processes such as the OSC server to perform operations.
         """
-        #self.osc_server.process()
+        self.osc_server.process()
         self.ws_server.serveonce()
         self.schedule_message(1, self.tick)
 

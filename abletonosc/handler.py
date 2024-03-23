@@ -7,7 +7,7 @@ class AbletonOSCHandler(Component):
     def __init__(self, manager):
         super().__init__()
 
-        self.logger = logging.getLogger("abletonosc")
+        self.logger = logging.getLogger("abletonosc-ws")
         self.manager = manager
         self.osc_server: OSCServer = self.manager.osc_server
         self.init_api()

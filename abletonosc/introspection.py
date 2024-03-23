@@ -1,6 +1,6 @@
 import inspect
 import logging
-logger = logging.getLogger("abletonosc")
+logger = logging.getLogger("abletonosc-ws")
 
 def describe_module(module):
     """

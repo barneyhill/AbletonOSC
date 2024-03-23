@@ -20,6 +20,8 @@ from select import select
 import logging
 import traceback
 
+from ..pythonosc.osc_message import OscMessage
+
 __all__ = ['WebSocket',
             'SimpleWebSocketServer']
 
@@ -106,6 +108,8 @@ class WebSocket(object):
       # restrict the size of header and payload for security reasons
       self.maxheader = MAXHEADER
       self.maxpayload = MAXPAYLOAD
+
+      self.logger = logging.getLogger("abletonosc-ws")
 
    def handleMessage(self):
       """
@@ -706,6 +710,12 @@ class SimpleWebSocketServer(object):
 class SimpleEcho(WebSocket):
 
    def handleMessage(self):
+      self.logger.info('message: %s', self.data)
+      try:
+         self.logger.info('translated message %s', OscMessage(self.data))
+      except Exception as e:
+         self.logger.error('error parsing message: %s', e)
+         
       self.sendMessage(self.data)
 
    def handleConnected(self):
