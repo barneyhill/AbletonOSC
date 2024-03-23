@@ -19,9 +19,10 @@ class Manager(ControlSurface):
 
         self.start_logging()
 
-        self.ws_server = abletonosc.SimpleWebSocketServer('127.0.0.1', 3000, abletonosc.SimpleEcho)
-
         self.osc_server = abletonosc.OSCServer()
+
+        self.ws_server = abletonosc.SimpleWebSocketServer('127.0.0.1', 3000, abletonosc.SimpleEcho, self.osc_server)
+
         self.schedule_message(0, self.tick)
 
         self.init_api()
@@ -105,7 +106,6 @@ class Manager(ControlSurface):
         and beachballs when a thread is started. Instead, this approach allows long-running
         processes such as the OSC server to perform operations.
         """
-        self.osc_server.process()
         self.ws_server.serveonce()
         self.schedule_message(1, self.tick)
 

@@ -20,7 +20,7 @@ from select import select
 import logging
 import traceback
 
-from ..pythonosc.osc_message import OscMessage
+from ..pythonosc.osc_message_builder import OscMessageBuilder, BuildError
 
 __all__ = ['WebSocket',
             'SimpleWebSocketServer']
@@ -590,7 +590,7 @@ class WebSocket(object):
 
 
 class SimpleWebSocketServer(object):
-   def __init__(self, host, port, websocketclass, selectInterval = 0.1):
+   def __init__(self, host, port, websocketclass, osc_server, selectInterval = 0.1):
       self.websocketclass = websocketclass
 
       if (host == ''):
@@ -616,11 +616,13 @@ class SimpleWebSocketServer(object):
       self.connections = {}
       self.listeners = [self.serversocket]
 
+      self.osc_server = osc_server
+
    def _decorateSocket(self, sock):
       return sock
 
-   def _constructWebSocket(self, sock, address):
-      return self.websocketclass(self, sock, address)
+   def _constructWebSocket(self, sock, address, osc_server):
+      return self.websocketclass(self, sock, address, osc_server)
 
    def close(self):
       self.serversocket.close()
@@ -675,7 +677,7 @@ class SimpleWebSocketServer(object):
                newsock = self._decorateSocket(sock)
                newsock.setblocking(0)
                fileno = newsock.fileno()
-               self.connections[fileno] = self._constructWebSocket(newsock, address)
+               self.connections[fileno] = self._constructWebSocket(newsock, address, self.osc_server)
                self.listeners.append(fileno)
             except Exception as n:
                if sock is not None:
@@ -709,10 +711,25 @@ class SimpleWebSocketServer(object):
 
 class SimpleEcho(WebSocket):
 
+   def __init__(self, server, sock, address, osc_server):
+      super(SimpleEcho, self).__init__(server, sock, address)
+      self.osc_server = osc_server
+
    def handleMessage(self):
       self.logger.info('message: %s', self.data)
+      self.logger.info('osc remote %s', self.osc_server._local_addr)
       try:
-         self.logger.info('translated message %s', OscMessage(self.data))
+         for (address, params) in self.osc_server.parse_bundle(self.data):
+            msg_builder = OscMessageBuilder(address)
+            for param in params:
+                  msg_builder.add_arg(param)
+
+            try:
+                  msg = msg_builder.build()
+                  self.sendMessage(msg.dgram)
+            except BuildError:
+                  self.logger.error("AbletonOSC: OSC build error: %s" % (traceback.format_exc()))
+
       except Exception as e:
          self.logger.error('error parsing message: %s', e)
          
